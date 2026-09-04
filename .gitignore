@@ -1,0 +1,11 @@
+# Ignore database backups (extremely large and contains sensitive production data)
+*.sql
+*.sql.gz
+
+# Ignore swap/temporary files
+.*.swp
+.docker-compose.yml.swp
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
