@@ -1,6 +1,6 @@
-# Plano de Execução: Restrição de Execução por Permissões no n8n (leadwise_n8n) - Nós Pais
+# Plano de Execução: Restrição de Execução por Permissões no n8n (leadwise_n8n) - Nós Pais Estritos
 
-Este documento descreve as alterações planejadas nos workflows ativos do **n8n** para consultar e impor as permissões de módulo (`module_permissions`) de cada usuário, garantindo o alinhamento com seu plano de contratação para os fluxos de triagem individual, **Media Describer**, **Trends, Alerts and Strategies (TAS)**, **Sales Follow-up** e **Awaiting Agent (Mensagens Sem Resposta)**.
+Este documento descreve as alterações planejadas nos workflows ativos do **n8n** para consultar e impor as permissões de módulo (`module_permissions`) de cada usuário, tratando os fluxos de **Media Describer** e **Trends, Alerts and Strategies (TAS)** estritamente como **Nós Pais (Módulos Base)** independentes de primeiro nível e sem representações granulares duplicadas.
 
 ---
 
@@ -18,10 +18,7 @@ Para cada um dos cinco fluxos a serem alterados, criaremos cópias de segurança
 
 ## 2. Otimização de Performance e Redução de Conexões Supabase (O(1) Queries)
 
-Durante a revisão técnica, identificamos que realizar consultas separadas de permissões para cada lead em lote causaria sobrecarga no banco de dados e adicionaria latência desnecessária.
-
-### Solução Inteligente (Recomendada):
-Sempre que o n8n chamar a Edge Function `get-analytics-lead-messages` (ou similar) no início dos crons ou workflows, essa Edge Function deve retornar o array `module_permissions` diretamente no JSON de resposta.
+Sempre que o n8n chamar a Edge Function `get-analytics-lead-messages` no início dos crons ou workflows, essa Edge Function deve retornar o array `module_permissions` diretamente no JSON de resposta.
 
 Isso significa que:
 1. No fluxo **`Triagem e analises individuais - V3 - Gemini`**, no **`Follow up - Per lead - V3 - Gemini`** e no **`Check waiting answer - Agent - V3 - Gemini`**, o n8n **não precisa criar um novo nó Supabase**. O array de permissões já virá pronto na carga de trabalho de entrada (`When Executed by Another Workflow`).
@@ -29,7 +26,7 @@ Isso significa que:
 
 ---
 
-## 3. Estratégia de Implementação nos Cinco Workflows (Com Nós Pais)
+## 3. Estratégia de Implementação nos Cinco Workflows (Com Nós Pais Estritos)
 
 ### A. Fluxo de Triagem e Análises Individuais
 **Workflow de Destino:** `Triagem e analises individuais - V3 - Gemini`
@@ -49,7 +46,7 @@ Isso significa que:
 
 ### B. Fluxo de Media Describer (Transcrição e Descrição de Mídias)
 **Workflow de Destino:** `Media describer webhook - V3 - Gemini`
-Tratado como **Nó Pai (Módulo Base)** independente, o n8n agora busca a chave direta `media_describer` (sem pontos/namespaces).
+Tratado estritamente como **Nó Pai / Módulo Base** independente, o n8n agora busca a chave direta `media_describer` (sem pontos/namespaces ou chaves duplicadas).
 
 * **Ponto de Interceptação:** Logo na entrada, após o nó `Webhook`.
 * **Nó `Get Media Permissions` (Supabase com credencial `service_role`):**
@@ -63,7 +60,7 @@ Tratado como **Nó Pai (Módulo Base)** independente, o n8n agora busca a chave 
 
 ### C. Fluxo de Trends, Alerts and Strategies (TAS)
 **Workflow de Destino:** `Leadwise - Trends, Alerts and Strategies - Gemini`
-Tratado como **Nó Pai (Módulo Base)** independente, o n8n agora busca a chave direta `trends_alerts_strategies`.
+Tratado estritamente como **Nó Pai / Módulo Base** independente, o n8n agora busca a chave direta `trends_alerts_strategies`.
 
 * **Ponto de Interceptação:** Logo no início, após o nó `When Executed by Another Workflow`.
 * **Nó `Get TAS Permissions` (Supabase com credencial `service_role`):**
@@ -91,7 +88,7 @@ Tratado como **Nó Pai (Módulo Base)** independente, o n8n agora busca a chave 
 **Workflow de Destino:** `Check waiting answer - Agent - V3 - Gemini`
 
 * **Ponto de Interceptação:** Logo no início, após o nó de trigger.
-* **Leitura das Permissões:** O array de permissões já vem mapeado nos metadados obtidos da Edge Function: `{{ $json.metadata.module_permissions }}` (ou se for obtido via query caso o ponto de partida do cron seja diferente).
+* **Leitura das Permissões:** O array de permissões já vem mapeado nos metadados obtidos da Edge Function: `{{ $json.metadata.module_permissions }}`.
 * **Nó `Check Waiting Answer Permission` (If Node):**
   * Condição: Confirma se o array `module_permissions` contém a string **`copilot.waiting_answer`**.
   * **Caminho True:** Executa o `AI Agent` para determinar se o lead está esperando resposta e atualiza o respectivo estado no banco.
@@ -107,14 +104,14 @@ Em todos os nós do tipo `If` adicionados para proteção de permissões, podemo
 // Exemplo para o Media Describer (Check Media Permission)
 const perms = $('Get Media Permissions').item.json.module_permissions;
 if (!perms || perms.length === 0) return true;
-return perms.includes('media_describer'); // Valida nó pai diretamente
+return perms.includes('media_describer'); // Valida nó pai diretamente sem prefixo
 ```
 
 ```javascript
 // Exemplo para o Trends, Alerts and Strategies (Check TAS Permission)
 const perms = $('Get TAS Permissions').item.json.module_permissions;
 if (!perms || perms.length === 0) return true;
-return perms.includes('trends_alerts_strategies'); // Valida nó pai diretamente
+return perms.includes('trends_alerts_strategies'); // Valida nó pai diretamente sem prefixo
 ```
 
 ```javascript
