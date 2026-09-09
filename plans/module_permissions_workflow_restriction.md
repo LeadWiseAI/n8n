@@ -1,17 +1,18 @@
 # Plano de Execução: Restrição de Execução por Permissões no n8n (leadwise_n8n) - Nós Pais
 
-Este documento descreve as alterações planejadas nos workflows ativos do **n8n** para consultar e impor as permissões de módulo (`module_permissions`) de cada usuário, tratando os fluxos de **Media Describer** e **Trends, Alerts and Strategies (TAS)** como **Nós Pais (Módulos Base)** independentes e de primeiro nível.
+Este documento descreve as alterações planejadas nos workflows ativos do **n8n** para consultar e impor as permissões de módulo (`module_permissions`) de cada usuário, garantindo o alinhamento com seu plano de contratação para os fluxos de triagem individual, **Media Describer**, **Trends, Alerts and Strategies (TAS)**, **Sales Follow-up** e **Awaiting Agent (Mensagens Sem Resposta)**.
 
 ---
 
 ## 1. Diretrizes de Segurança (Regra Mandatória)
 
 De acordo com o `GEMINI.md` do projeto, **nunca devemos editar os fluxos estáveis diretamente**.
-Para cada um dos quatro fluxos a serem alterados, criaremos cópias de segurança com o sufixo `- Gemini` para realizar o desenvolvimento e testes com segurança:
+Para cada um dos cinco fluxos a serem alterados, criaremos cópias de segurança com o sufixo `- Gemini` para realizar o desenvolvimento e testes com segurança:
 * `Triagem e analises individuais - V3` $\rightarrow$ `Triagem e analises individuais - V3 - Gemini`
 * `Media describer webhook - V3` $\rightarrow$ `Media describer webhook - V3 - Gemini`
 * `Leadwise - Trends, Alerts and Strategies` $\rightarrow$ `Leadwise - Trends, Alerts and Strategies - Gemini`
 * `Follow up - Per lead - V3` $\rightarrow$ `Follow up - Per lead - V3 - Gemini`
+* `Check waiting answer - Agent - V3 - Gemini` (Já em cópia, alteraremos diretamente este fluxo ativo `- Gemini`).
 
 ---
 
@@ -20,15 +21,15 @@ Para cada um dos quatro fluxos a serem alterados, criaremos cópias de seguranç
 Durante a revisão técnica, identificamos que realizar consultas separadas de permissões para cada lead em lote causaria sobrecarga no banco de dados e adicionaria latência desnecessária.
 
 ### Solução Inteligente (Recomendada):
-Sempre que o n8n chamar a Edge Function `get-analytics-lead-messages` no início dos crons ou workflows, essa Edge Function deve retornar o array `module_permissions` diretamente no JSON de resposta.
+Sempre que o n8n chamar a Edge Function `get-analytics-lead-messages` (ou similar) no início dos crons ou workflows, essa Edge Function deve retornar o array `module_permissions` diretamente no JSON de resposta.
 
 Isso significa que:
-1. No fluxo **`Triagem e analises individuais - V3 - Gemini`** e no **`Follow up - Per lead - V3 - Gemini`**, o n8n **não precisa criar um novo nó Supabase**. O array de permissões já virá pronto na carga de trabalho de entrada (`When Executed by Another Workflow`).
+1. No fluxo **`Triagem e analises individuais - V3 - Gemini`**, no **`Follow up - Per lead - V3 - Gemini`** e no **`Check waiting answer - Agent - V3 - Gemini`**, o n8n **não precisa criar um novo nó Supabase**. O array de permissões já virá pronto na carga de trabalho de entrada (`When Executed by Another Workflow`).
 2. Isso reduz o tempo de processamento pela metade e previne estouros de limite de conexões simultâneas no PostgreSQL.
 
 ---
 
-## 3. Estratégia de Implementação nos Quatro Workflows (Com Nós Pais)
+## 3. Estratégia de Implementação nos Cinco Workflows (Com Nós Pais)
 
 ### A. Fluxo de Triagem e Análises Individuais
 **Workflow de Destino:** `Triagem e analises individuais - V3 - Gemini`
@@ -86,6 +87,18 @@ Tratado como **Nó Pai (Módulo Base)** independente, o n8n agora busca a chave 
 
 ---
 
+### E. Fluxo de Awaiting Agent (Mensagens Sem Resposta)
+**Workflow de Destino:** `Check waiting answer - Agent - V3 - Gemini`
+
+* **Ponto de Interceptação:** Logo no início, após o nó de trigger.
+* **Leitura das Permissões:** O array de permissões já vem mapeado nos metadados obtidos da Edge Function: `{{ $json.metadata.module_permissions }}` (ou se for obtido via query caso o ponto de partida do cron seja diferente).
+* **Nó `Check Waiting Answer Permission` (If Node):**
+  * Condição: Confirma se o array `module_permissions` contém a string **`copilot.waiting_answer`**.
+  * **Caminho True:** Executa o `AI Agent` para determinar se o lead está esperando resposta e atualiza o respectivo estado no banco.
+  * **Caminho False:** Interrompe a execução imediatamente, sem acionar o LLM e sem decrementar créditos do saldo da empresa.
+
+---
+
 ## 4. Lógica de Código de Filtragem (Exemplo de Implementação)
 
 Em todos os nós do tipo `If` adicionados para proteção de permissões, podemos utilizar uma simples expressão Javascript no n8n:
@@ -104,11 +117,25 @@ if (!perms || perms.length === 0) return true;
 return perms.includes('trends_alerts_strategies'); // Valida nó pai diretamente
 ```
 
+```javascript
+// Exemplo para o Sales Follow-up (Check Follow-up Permission)
+const perms = $json.metadata.module_permissions;
+if (!perms || perms.length === 0) return true;
+return perms.includes('copilot.sugestoes_ia');
+```
+
+```javascript
+// Exemplo para o Awaiting Agent (Check Waiting Answer Permission)
+const perms = $json.metadata.module_permissions;
+if (!perms || perms.length === 0) return true;
+return perms.includes('copilot.waiting_answer');
+```
+
 ---
 
 ## 5. Passos para Aplicação e Deploy
 
-1. Duplicar os 4 workflows no JSON `workflows.json` e gerar identificadores únicos correspondentes de 16 caracteres.
+1. Duplicar os workflows necessários no JSON `workflows.json` e gerar identificadores únicos correspondentes de 16 caracteres.
 2. Aplicar a inserção dos nós conforme planejado e atualizar as coordenadas visuais dos nós afetados.
 3. Importar os workflows modificados para o banco do n8n utilizando os utilitários do repositório:
    ```bash
