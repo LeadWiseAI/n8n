@@ -697,7 +697,7 @@
     "id": "kXJM0awEo2C4NwDQ",
     "name": "Analytics per organization_id",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -3318,7 +3318,7 @@
     "id": "rC6tRellabl0swA6",
     "name": "Follow up - Per lead - V3",
     "description": null,
-    "active": false,
+    "active": true,
     "isArchived": false,
     "nodes": [
       {
@@ -4235,7 +4235,7 @@
     "id": "NufMT2kZB9N3bWMU",
     "name": "Media describer webhook - V3 - Gemini",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -5023,7 +5023,7 @@
     "id": "uJHummH0dISgvMdi",
     "name": "Leadwise - Trends, Alerts and Strategies - Gemini",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -5768,7 +5768,7 @@
     "id": "dFwmL4eIstPv7g7B",
     "name": "Error workflow for Claim Analysis Jobs",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -5868,7 +5868,7 @@
     "id": "ANma7fFMpL2xMd7U",
     "name": "Triagem e analises individuais - V3",
     "description": null,
-    "active": false,
+    "active": true,
     "isArchived": false,
     "nodes": [
       {
@@ -7318,7 +7318,7 @@
     "id": "iCYZ7UU4zooVAFua",
     "name": "My workflow",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -7546,7 +7546,7 @@
     "id": "u7JsuFLmpkD3sexb",
     "name": "Log N8N execution",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -7614,13 +7614,7 @@
     "nodes": [
       {
         "parameters": {
-          "workflowId": {
-            "__rl": true,
-            "value": "uJHummH0dISgvMdi",
-            "mode": "list",
-            "cachedResultUrl": "/workflow/uJHummH0dISgvMdi",
-            "cachedResultName": "Leadwise - Trends, Alerts and Strategies - Gemini"
-          },
+          "workflowId": "VdbZgJyLRXJf3pN0",
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {},
@@ -8438,13 +8432,7 @@
       },
       {
         "parameters": {
-          "workflowId": {
-            "__rl": true,
-            "value": "uJHummH0dISgvMdi",
-            "mode": "list",
-            "cachedResultUrl": "/workflow/uJHummH0dISgvMdi",
-            "cachedResultName": "Leadwise - Trends, Alerts and Strategies - Gemini"
-          },
+          "workflowId": "VdbZgJyLRXJf3pN0",
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {},
@@ -8962,7 +8950,7 @@
     "id": "zqwKqZcswTJa69z7",
     "name": "My workflow 4",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -9046,7 +9034,7 @@
     "id": "h1Gy7XVhCwd1gXIP",
     "name": "retry failed llm costs jobs",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -11265,7 +11253,7 @@
     "id": "TgqOyxcYEqzYOELc",
     "name": "Follow up - Per lead - V3 - Gemini",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -11656,12 +11644,12 @@
             "conditions": [
               {
                 "id": "check-follow-up-perm-condition",
-                "leftValue": "={{ $json.metadata?.module_permissions }}",
-                "rightValue": "copilot.sugestoes_ia",
+                "leftValue": "={{ Array.isArray($json.metadata?.module_permissions) && ($json.metadata.module_permissions.includes('copilot') || $json.metadata.module_permissions.includes('copilot.sugestoes_ia')) }}",
+                "rightValue": "",
                 "operator": {
-                  "type": "array",
-                  "operation": "contains",
-                  "rightType": "any"
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
                 }
               }
             ],
@@ -12435,13 +12423,7 @@
       },
       {
         "parameters": {
-          "workflowId": {
-            "__rl": true,
-            "value": "8rw6PdpraTy4y8LP",
-            "mode": "list",
-            "cachedResultUrl": "/workflow/8rw6PdpraTy4y8LP",
-            "cachedResultName": "Triagem e analises individuais - V3 - Gemini"
-          },
+          "workflowId": "ANma7fFMpL2xMd7U",
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {},
@@ -12732,7 +12714,7 @@
     "id": "8rw6PdpraTy4y8LP",
     "name": "Triagem e analises individuais - V3 - Gemini",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -12842,7 +12824,7 @@
       {
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "function parseOutput(raw) {\n  if (raw == null) return { analyses: [], indication: '' };\n\n  let parsed = raw;\n  if (typeof raw === 'string') {\n    parsed = JSON.parse(raw);\n  }\n\n  // novo formato: { analyses: [...], indication: \"...\" }\n  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {\n    return {\n      analyses: Array.isArray(parsed.analyses) ? parsed.analyses : [],\n      indication: typeof parsed.indication === 'string' ? parsed.indication : '',\n    };\n  }\n\n  // legado: array direto\n  if (Array.isArray(parsed)) {\n    return { analyses: parsed, indication: '' };\n  }\n\n  return { analyses: [], indication: '' };\n}\n\nconst raw = $json.output ?? $json;\nconst { analyses, indication } = parseOutput(raw);\n\n// O(1) Performance Optimization: filter allowed analyses using metadata.module_permissions\n// from 'When Executed by Another Workflow'\nlet perms = [];\ntry {\n  perms = $('When Executed by Another Workflow').item.json.metadata?.module_permissions;\n} catch (e) {\n  // Se houver algum erro de resolução, perms continua como vazio (fail-closed)\n}\n\nlet filteredAnalyses = [];\nif (Array.isArray(perms) && perms.length > 0) {\n  const permissionMap = {\n    'sentiment': 'analises.sentimento',\n    'objections': 'analises.objecoes',\n    'product': 'analises.produtos',\n    'segments': 'analises.v3', // ou gestao_vendas.funil\n    'topics': 'analises.v3',\n    'followup': 'copilot.sugestoes_ia'\n  };\n\n  filteredAnalyses = analyses.filter(a => {\n    const required = permissionMap[a];\n    return required ? perms.includes(required) : false;\n  });\n}\n\n// 👇 retorna APENAS 1 item por execução\nreturn {\n  json: {\n    values: filteredAnalyses,\n    indication,\n  },\n};"
+          "jsCode": "function parseOutput(raw) {\n  if (raw == null) return { analyses: [], indication: '' };\n\n  let parsed = raw;\n  if (typeof raw === 'string') {\n    parsed = JSON.parse(raw);\n  }\n\n  // novo formato: { analyses: [...], indication: \"...\" }\n  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {\n    return {\n      analyses: Array.isArray(parsed.analyses) ? parsed.analyses : [],\n      indication: typeof parsed.indication === 'string' ? parsed.indication : '',\n    };\n  }\n\n  // legado: array direto\n  if (Array.isArray(parsed)) {\n    return { analyses: parsed, indication: '' };\n  }\n\n  return { analyses: [], indication: '' };\n}\n\nconst raw = $json.output ?? $json;\nconst { analyses, indication } = parseOutput(raw);\n\n// O(1) Performance Optimization: filter allowed analyses using metadata.module_permissions\n// from 'When Executed by Another Workflow'\nlet perms = [];\ntry {\n  perms = $('When Executed by Another Workflow').item.json.metadata?.module_permissions;\n} catch (e) {\n  // Se houver algum erro de resolução, perms continua como vazio (fail-closed)\n}\n\nlet filteredAnalyses = [];\nif (Array.isArray(perms) && perms.length > 0) {\n  const permissionMap = {\n    'sentiment': 'analises.sentimento',\n    'objections': 'analises.objecoes',\n    'product': 'analises.produtos',\n    'segments': 'analises.v3', // ou gestao_vendas.funil\n    'topics': 'analises.v3',\n    'followup': 'copilot.sugestoes_ia'\n  };\n\n  const hasPermission = (pList, req) => {\n    if (pList.includes(req)) return true;\n    const dotIdx = req.indexOf('.');\n    if (dotIdx !== -1) {\n      const parent = req.substring(0, dotIdx);\n      if (pList.includes(parent)) return true;\n    }\n    return false;\n  };\n\n  filteredAnalyses = analyses.filter(a => {\n    const required = permissionMap[a];\n    return required ? hasPermission(perms, required) : false;\n  });\n}\n\n// 👇 retorna APENAS 1 item por execução\nreturn {\n  json: {\n    values: filteredAnalyses,\n    indication,\n  },\n};"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -14765,7 +14747,7 @@
     "id": "N968MEakv7h4EipL",
     "name": "My workflow 3",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": true,
     "nodes": [],
     "connections": {},
@@ -16770,7 +16752,7 @@
     "id": "bIc963WMhnHHxik3",
     "name": "VEO3 workflow",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -17892,7 +17874,7 @@
     "id": "p0wVs1RDqx8IKCTvJHgNj",
     "name": "My workflow 5",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": true,
     "nodes": [
       {
@@ -17979,7 +17961,7 @@
     "id": "v6NUteIdSiuUO8CE",
     "name": "CRON - Check awaiting leads - V3",
     "description": null,
-    "active": false,
+    "active": true,
     "isArchived": false,
     "nodes": [
       {
@@ -20610,7 +20592,7 @@
     "id": "gLKD5O37F8C8BDQm",
     "name": "DEBUG - 1 organization",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -22371,7 +22353,7 @@
     "id": "blo9CtclyCJHZuGz",
     "name": "CRON - Follow-up - V3 - Real time",
     "description": null,
-    "active": false,
+    "active": true,
     "isArchived": false,
     "nodes": [
       {
@@ -22546,13 +22528,7 @@
       },
       {
         "parameters": {
-          "workflowId": {
-            "__rl": true,
-            "value": "TgqOyxcYEqzYOELc",
-            "mode": "list",
-            "cachedResultUrl": "/workflow/TgqOyxcYEqzYOELc",
-            "cachedResultName": "Follow up - Per lead - V3 - Gemini"
-          },
+          "workflowId": "rC6tRellabl0swA6",
           "workflowInputs": {
             "mappingMode": "defineBelow",
             "value": {},
@@ -23176,12 +23152,12 @@
             "conditions": [
               {
                 "id": "check-waiting-answer-perm-condition",
-                "leftValue": "={{ $json.metadata?.module_permissions }}",
-                "rightValue": "copilot.waiting_answer",
+                "leftValue": "={{ Array.isArray($json.metadata?.module_permissions) && ($json.metadata.module_permissions.includes('copilot') || $json.metadata.module_permissions.includes('copilot.waiting_answer')) }}",
+                "rightValue": "",
                 "operator": {
-                  "type": "array",
-                  "operation": "contains",
-                  "rightType": "any"
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
                 }
               }
             ],
@@ -23402,7 +23378,7 @@
     "id": "YnM8ktxAMiThrfsu",
     "name": "My workflow 2",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -23488,7 +23464,7 @@
     "id": "AtOkpP8nbenRmPfD",
     "name": "My workflow 6",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": true,
     "nodes": [],
     "connections": {},
@@ -24024,7 +24000,7 @@
     "id": "80MEQBIP5zVCW7jM",
     "name": "Claim Analysis jobs",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -25915,7 +25891,7 @@
     "id": "y5USvALNAXzvg5Rn",
     "name": "Topics analyzer",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -28861,7 +28837,7 @@
     "id": "VdbZgJyLRXJf3pN0",
     "name": "Leadwise - Trends, Alerts and Strategies",
     "description": null,
-    "active": false,
+    "active": true,
     "isArchived": false,
     "nodes": [
       {
@@ -30716,7 +30692,7 @@
     "id": "2ZHa6Ho1g65LzNtS",
     "name": "Objections analyzer",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
